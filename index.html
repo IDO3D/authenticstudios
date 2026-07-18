@@ -32,7 +32,7 @@ img{max-width:100%;}
 .ws{font-family:'DM Sans',sans-serif;font-weight:500;font-size:clamp(.6rem,1.6vw,.85rem);letter-spacing:.55em;text-transform:uppercase;color:rgba(10,10,10,.22);padding-left:.55em;}
 #ph{position:absolute;bottom:calc(42px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(10,10,10,.35);pointer-events:none;opacity:0;transition:opacity .6s ease;}
 #ph.show{opacity:1;}
-#eb{position:absolute;bottom:calc(84px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);min-height:52px;padding:14px 46px;background:#0a0a0a;color:#f5f0e8;font-size:.75rem;letter-spacing:.35em;text-transform:uppercase;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .6s ease,transform .2s ease;}
+#eb{position:absolute;z-index:20;bottom:calc(84px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);min-height:56px;min-width:180px;padding:16px 46px;background:#0a0a0a;color:#f5f0e8;font-size:.75rem;letter-spacing:.35em;text-transform:uppercase;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .6s ease,transform .2s ease;-webkit-tap-highlight-color:transparent;}
 #eb.show{opacity:1;pointer-events:all;}
 #eb.show:hover{transform:translateX(-50%) scale(1.04);}
 
@@ -594,10 +594,21 @@ introEl.addEventListener('mousedown', function(){ lx=undefined; ly=undefined; })
 if('ontouchstart' in window){
   if(phEl){ phEl.textContent='Tap & drag to paint'; phEl.classList.add('show'); hinted=true; }
 }
+/* Is a point over the Enter button (while it's showing)?
+   The paint layer calls preventDefault on the whole intro, which
+   would otherwise swallow taps on the button — so we hit-test the
+   touch ourselves and auto-enter when the finger reaches Enter. */
+function overEnter(x,y){
+  if(!ebEl || !ebEl.classList.contains('show')) return false;
+  var r=ebEl.getBoundingClientRect();
+  var pad=16; /* generous hit area — no precise tap needed */
+  return x>=r.left-pad && x<=r.right+pad && y>=r.top-pad && y<=r.bottom+pad;
+}
 introEl.addEventListener('touchstart', function(e){
   if(!brushEl) return;
-  e.preventDefault();
   var t=e.touches[0];
+  if(overEnter(t.clientX,t.clientY)){ enterSite(); return; }
+  e.preventDefault();
   lx=undefined; ly=undefined;
   paint(t.clientX,t.clientY);
   brushEl.style.display='block';
@@ -606,14 +617,18 @@ introEl.addEventListener('touchstart', function(e){
 },{passive:false});
 introEl.addEventListener('touchmove', function(e){
   if(!brushEl) return;
-  e.preventDefault();
   var t=e.touches[0];
+  if(overEnter(t.clientX,t.clientY)){ enterSite(); return; }
+  e.preventDefault();
   paint(t.clientX,t.clientY);
   brushEl.style.left=t.clientX+'px';
   brushEl.style.top=t.clientY+'px';
 },{passive:false});
 
+var _entered=false;
 function enterSite(){
+  if(_entered) return;   /* touchmove can fire this many times */
+  _entered=true;
   introEl.style.pointerEvents='none';
   introEl.removeEventListener('mousemove', onPaintMove);
   introEl.removeEventListener('mouseleave', onPaintLeave);
@@ -629,6 +644,11 @@ function enterSite(){
     if(m) m.classList.add('active');
     initReveal();
   },850);
+}
+
+/* Direct tap on the button (belt-and-suspenders alongside overEnter) */
+if(ebEl){
+  ebEl.addEventListener('touchend', function(e){ e.preventDefault(); e.stopPropagation(); enterSite(); },{passive:false});
 }
 
 /* Intro init */
