@@ -201,19 +201,25 @@ footer{padding:44px 22px calc(56px + env(safe-area-inset-bottom));border-top:1px
 #toast{position:fixed;left:50%;bottom:calc(28px + env(safe-area-inset-bottom));transform:translate(-50%,16px);z-index:950;background:#F5F5F2;color:#050505;font-size:.74rem;font-weight:500;letter-spacing:.06em;padding:13px 22px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .35s ease,transform .35s ease;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,.4);}
 #toast.show{opacity:1;transform:translate(-50%,0);}
 
-/* ═══════════ DESKTOP 900px+ ═══════════ */
+/* ═══════════ DESKTOP 900px+ ═══════════
+   Desktop uses the SAME layout as mobile — full-screen hero with the
+   HUD overlaid, a fixed bottom Select-Size bar, and the #details size
+   section — just widened and centered. The side buy-panel is not used. */
 @media(min-width:900px){
   #nav{padding:18px 44px;}
   .nav-link{display:inline-block;}
-  #hero{display:grid;grid-template-columns:55fr 45fr;height:100vh;}
-  .hero-img-wrap{position:relative;grid-column:1;}
-  .hero-fade{background:linear-gradient(to right,transparent 55%,rgba(5,5,5,.5) 82%,#050505 100%);height:100%;top:0;}
-  #main{padding-bottom:0;}
-  .hero-text{display:none;}
-  .hero-content-desk{display:flex;flex-direction:column;justify-content:center;grid-column:2;padding:90px 64px 60px 48px;max-width:560px;}
-  #hero-action-bar{display:none;}
-  #details{display:none;}
+  /* Hero stays full-screen (no split); center the overlaid HUD content */
+  .hero-fade{height:60%;}
+  .hero-text{max-width:1100px;margin:0 auto;padding-left:44px;padding-right:44px;}
+  .hero-h1{font-size:clamp(4rem,9vw,7rem);}
+  .hero-descriptor{font-size:clamp(1.2rem,2.4vw,1.6rem);}
+  /* .hero-content-desk stays display:none (from base) — not used on desktop */
+  /* Fixed bottom size bar: keep it, center its button */
+  #hero-action-bar{padding:16px 44px calc(16px + env(safe-area-inset-bottom));}
+  #hero-action-bar .atc-btn{max-width:560px;margin:0 auto;display:block;}
   .pdp-section{max-width:860px;padding:84px 44px;}
+  .pdp-section#details .sz-row{max-width:560px;}
+  .pdp-section#details .atc-btn,.pdp-section#details .sz-label,.pdp-section#details .buy-note{max-width:560px;}
   .spec-grid{grid-template-columns:1fr 1fr;column-gap:56px;}
   #story{max-width:1060px;padding:110px 44px 130px;display:grid;grid-template-columns:1fr 1fr;column-gap:72px;align-items:start;}
   #story .sec-label{grid-column:1/-1;}
@@ -234,14 +240,12 @@ footer{padding:44px 22px calc(56px + env(safe-area-inset-bottom));border-top:1px
   #nav{padding:20px 64px;}
   .pdp-section{padding:100px 64px;}
   #story{padding:130px 64px 150px;}
-  .hero-content-desk{padding:100px 90px 70px 64px;}
   footer{padding:40px 64px;}
 }
 @media(min-width:1440px){
   #nav{padding:22px 90px;}
   .pdp-section{padding:110px 90px;max-width:960px;}
   #story{padding:150px 90px 170px;max-width:1180px;}
-  .hero-content-desk{padding:110px 120px 80px 80px;}
   footer{padding:44px 90px;}
 }
 </style>
