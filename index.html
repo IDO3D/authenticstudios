@@ -855,6 +855,18 @@ footer{
 
 <div id="toast"></div>
 
+<!-- ORDER CONFIRMED (shown on return from Stripe: ?order=success) -->
+<div id="order-confirmed" style="position:fixed;inset:0;z-index:9500;background:rgba(5,5,5,.94);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);display:none;align-items:center;justify-content:center;padding:28px;">
+  <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;max-width:340px;">
+    <div class="succ-ring">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <p class="succ-h">Order recorded.</p>
+    <p class="succ-p">Thank you &mdash; your order is confirmed and being made now. A confirmation is on its way to your email, and your tee ships in 5&ndash;10 days.</p>
+    <button class="succ-close" onclick="closeOrderConfirmed()">Back to Shop</button>
+  </div>
+</div>
+
 <script>
 /* ── KLAVIYO EMAIL SUBSCRIBE ── */
 function klaviyoSubscribe(email, source) {
@@ -1251,11 +1263,44 @@ function submitOrder(){
   setTimeout(function(){window.location.href=url;},380);
 }
 
+/* ── ORDER CONFIRMED (return from Stripe) ── */
+function closeOrderConfirmed(){
+  var el=document.getElementById('order-confirmed');
+  if(el)el.style.display='none';
+}
+(function(){
+  try{
+    var params=new URLSearchParams(window.location.search);
+    if(params.get('order')!=='success')return;
+
+    /* Order is paid — clear the cart */
+    _cart=[];
+    var badge=document.getElementById('cart-badge');
+    if(badge)badge.textContent='';
+
+    /* Skip the paint-to-enter gate for returning buyers and reveal the shop */
+    var intro=document.getElementById('intro');
+    if(intro){intro.style.pointerEvents='none';intro.style.display='none';}
+    var m=document.getElementById('main');
+    if(m)m.classList.add('active');
+    try{initReveal();}catch(e){}
+
+    /* Show the confirmation over everything */
+    var el=document.getElementById('order-confirmed');
+    if(el)el.style.display='flex';
+
+    /* Clean the URL so a refresh doesn't re-show the message */
+    if(window.history&&window.history.replaceState){
+      window.history.replaceState({},document.title,window.location.pathname+window.location.hash);
+    }
+  }catch(e){}
+})();
+
 /* ── LEGAL ── */
 function openLegal(id){var el=document.getElementById('legal-'+id);if(el)el.classList.add('open');}
 function closeLegal(id){var el=document.getElementById('legal-'+id);if(el)el.classList.remove('open');}
 document.addEventListener('keydown',function(e){
-  if(e.key==='Escape'){closeCheckout();closeCart();['privacy','returns','sizing'].forEach(function(id){closeLegal(id);});}
+  if(e.key==='Escape'){closeCheckout();closeCart();closeOrderConfirmed();['privacy','returns','sizing'].forEach(function(id){closeLegal(id);});}
 });
 
 /* ── DESKTOP LAYOUT ── */
